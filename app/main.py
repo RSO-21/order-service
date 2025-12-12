@@ -3,11 +3,15 @@ from app.routes import router as orders_router
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from app.database import get_db, engine, Base
+from prometheus_fastapi_instrumentator import Instrumentator
 
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Orders Microservice", version="1.0.0")
 app.include_router(orders_router, prefix="/orders")
+
+# Expose /metrics compatible with Prometheus scraping
+Instrumentator().instrument(app).expose(app)
 
 @app.get("/health")
 def health_check(db: Session = Depends(get_db)):
