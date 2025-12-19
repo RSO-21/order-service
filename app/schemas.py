@@ -33,3 +33,7 @@ class OrderResponse(BaseModel):
 
     model_config = {"from_attributes": True}
 
+class OrderPaymentUpdate(BaseModel):
+    payment_id: int
+    payment_status: str
+

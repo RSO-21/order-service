@@ -1,6 +1,7 @@
 # Created by venv; see https://docs.python.org/3/library/venv.html
 __pycache__
-venv/*
+**/venv_order/*
 .env
 **/*.pyc
 **/__pycache__/*
+.vscode/*

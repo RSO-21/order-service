@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends
-from app.schemas import OrderCreate, OrderResponse, OrderItemCreate, OrderItemResponse
+from app.schemas import OrderCreate, OrderResponse, OrderItemCreate, OrderItemResponse, OrderPaymentUpdate
 from app.database import get_db
 from app import models
 from typing import List
@@ -38,6 +38,22 @@ def get_order_item(item_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Order not found")
 
     return order_item
+
+@router.patch("/{order_id}/payment", response_model=OrderResponse)
+def update_order_payment(order_id: int, update: OrderPaymentUpdate, db: Session = Depends(get_db)):
+    # Fetch the order
+    order = db.query(models.Order).filter(models.Order.id == order_id).first()
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    
+    # Update payment info
+    order.payment_id = update.payment_id
+    order.payment_status = update.payment_status
+    
+    db.commit()
+    db.refresh(order)
+    
+    return order
 
 @router.get("/{order_id}", response_model=OrderResponse)
 def get_order(order_id: int, db: Session = Depends(get_db)):
