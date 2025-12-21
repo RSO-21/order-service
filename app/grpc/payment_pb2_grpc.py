@@ -3,7 +3,7 @@
 import grpc
 import warnings
 
-import app.order_pb2 as order__pb2
+import app.grpc.payment_pb2 as payment__pb2
 
 GRPC_GENERATED_VERSION = '1.76.0'
 GRPC_VERSION = grpc.__version__
@@ -18,14 +18,14 @@ except ImportError:
 if _version_not_supported:
     raise RuntimeError(
         f'The grpc package installed is at version {GRPC_VERSION},'
-        + ' but the generated code in order_pb2_grpc.py depends on'
+        + ' but the generated code in payment_pb2_grpc.py depends on'
         + f' grpcio>={GRPC_GENERATED_VERSION}.'
         + f' Please upgrade your grpc module to grpcio>={GRPC_GENERATED_VERSION}'
         + f' or downgrade your generated code using grpcio-tools<={GRPC_VERSION}.'
     )
 
 
-class OrderServiceStub(object):
+class PaymentServiceStub(object):
     """Missing associated documentation comment in .proto file."""
 
     def __init__(self, channel):
@@ -34,59 +34,59 @@ class OrderServiceStub(object):
         Args:
             channel: A grpc.Channel.
         """
-        self.CreateOrder = channel.unary_unary(
-                '/order.OrderService/CreateOrder',
-                request_serializer=order__pb2.CreateOrderRequest.SerializeToString,
-                response_deserializer=order__pb2.OrderResponse.FromString,
+        self.CreatePayment = channel.unary_unary(
+                '/payment.PaymentService/CreatePayment',
+                request_serializer=payment__pb2.CreatePaymentRequest.SerializeToString,
+                response_deserializer=payment__pb2.PaymentResponse.FromString,
                 _registered_method=True)
-        self.UpdatePayment = channel.unary_unary(
-                '/order.OrderService/UpdatePayment',
-                request_serializer=order__pb2.UpdatePaymentRequest.SerializeToString,
-                response_deserializer=order__pb2.OrderResponse.FromString,
+        self.ConfirmPayment = channel.unary_unary(
+                '/payment.PaymentService/ConfirmPayment',
+                request_serializer=payment__pb2.ConfirmPaymentRequest.SerializeToString,
+                response_deserializer=payment__pb2.PaymentResponse.FromString,
                 _registered_method=True)
 
 
-class OrderServiceServicer(object):
+class PaymentServiceServicer(object):
     """Missing associated documentation comment in .proto file."""
 
-    def CreateOrder(self, request, context):
+    def CreatePayment(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def UpdatePayment(self, request, context):
+    def ConfirmPayment(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
 
-def add_OrderServiceServicer_to_server(servicer, server):
+def add_PaymentServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'CreateOrder': grpc.unary_unary_rpc_method_handler(
-                    servicer.CreateOrder,
-                    request_deserializer=order__pb2.CreateOrderRequest.FromString,
-                    response_serializer=order__pb2.OrderResponse.SerializeToString,
+            'CreatePayment': grpc.unary_unary_rpc_method_handler(
+                    servicer.CreatePayment,
+                    request_deserializer=payment__pb2.CreatePaymentRequest.FromString,
+                    response_serializer=payment__pb2.PaymentResponse.SerializeToString,
             ),
-            'UpdatePayment': grpc.unary_unary_rpc_method_handler(
-                    servicer.UpdatePayment,
-                    request_deserializer=order__pb2.UpdatePaymentRequest.FromString,
-                    response_serializer=order__pb2.OrderResponse.SerializeToString,
+            'ConfirmPayment': grpc.unary_unary_rpc_method_handler(
+                    servicer.ConfirmPayment,
+                    request_deserializer=payment__pb2.ConfirmPaymentRequest.FromString,
+                    response_serializer=payment__pb2.PaymentResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'order.OrderService', rpc_method_handlers)
+            'payment.PaymentService', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
-    server.add_registered_method_handlers('order.OrderService', rpc_method_handlers)
+    server.add_registered_method_handlers('payment.PaymentService', rpc_method_handlers)
 
 
  # This class is part of an EXPERIMENTAL API.
-class OrderService(object):
+class PaymentService(object):
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
-    def CreateOrder(request,
+    def CreatePayment(request,
             target,
             options=(),
             channel_credentials=None,
@@ -99,9 +99,9 @@ class OrderService(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/order.OrderService/CreateOrder',
-            order__pb2.CreateOrderRequest.SerializeToString,
-            order__pb2.OrderResponse.FromString,
+            '/payment.PaymentService/CreatePayment',
+            payment__pb2.CreatePaymentRequest.SerializeToString,
+            payment__pb2.PaymentResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -113,7 +113,7 @@ class OrderService(object):
             _registered_method=True)
 
     @staticmethod
-    def UpdatePayment(request,
+    def ConfirmPayment(request,
             target,
             options=(),
             channel_credentials=None,
@@ -126,9 +126,9 @@ class OrderService(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/order.OrderService/UpdatePayment',
-            order__pb2.UpdatePaymentRequest.SerializeToString,
-            order__pb2.OrderResponse.FromString,
+            '/payment.PaymentService/ConfirmPayment',
+            payment__pb2.ConfirmPaymentRequest.SerializeToString,
+            payment__pb2.PaymentResponse.FromString,
             options,
             channel_credentials,
             insecure,

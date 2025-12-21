@@ -1,9 +1,10 @@
 from fastapi import APIRouter, HTTPException, Depends
 from app.schemas import OrderCreate, OrderResponse, OrderItemCreate, OrderItemResponse, OrderPaymentUpdate
-from app.database import get_db
+from app.database import get_db_session as get_db
 from app import models
 from typing import List
 from sqlalchemy.orm import Session
+from app.grpc import payment_client
 
 router = APIRouter()
 
@@ -11,9 +12,8 @@ router = APIRouter()
 def list_order(db: Session = Depends(get_db)):
     return db.query(models.Order).all()
 
-
-@router.post("/", response_model=OrderResponse, status_code=201)
-def create_order(order: OrderCreate, db: Session = Depends(get_db)):
+@router.post("/")
+def create_order(order: OrderCreate, db: Session = Depends(get_db), status_code=201):
     # create Order instance
     db_order = models.Order(user_id=order.user_id)
     # create OrderItem instances
@@ -24,7 +24,24 @@ def create_order(order: OrderCreate, db: Session = Depends(get_db)):
     db.add(db_order)
     db.commit()
     db.refresh(db_order)
-    return db_order
+
+    # call payment service with grpc and create payment
+    payment = payment_client.create_payment(
+        order_id=db_order.id,
+        user_id=order.user_id,
+        amount=order.amount
+    )
+
+    # store payment to DB
+    db_order.payment_id = payment.payment_id
+    db.commit()
+
+    # return information to frontend
+    return {
+        "order_id": db_order.id,
+        "payment_id": payment.payment_id,
+        "payment_status": "PENDING"
+    }
 
 @router.get("/items", response_model=List[OrderItemResponse])
 def list_order_items(db: Session = Depends(get_db)):

@@ -2,6 +2,7 @@ from pydantic import BaseModel
 from enum import Enum
 from datetime import datetime
 from typing import List
+from decimal import Decimal
 
 ## OrderItem schemas (define these first so Order schemas can reference them)
 class OrderItemCreate(BaseModel):
@@ -20,6 +21,7 @@ class OrderItemResponse(BaseModel):
 class OrderCreate(BaseModel):
     user_id: int
     items: List[OrderItemCreate]
+    amount: Decimal | None = None
 
 class OrderResponse(BaseModel):
     id: int

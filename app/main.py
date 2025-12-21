@@ -2,7 +2,7 @@ from fastapi import FastAPI, Depends
 from app.routes import router as orders_router
 from sqlalchemy.orm import Session
 from sqlalchemy import text
-from app.database import get_db, engine, Base
+from app.database import get_db_session, engine, Base
 from prometheus_fastapi_instrumentator import Instrumentator
 
 Base.metadata.create_all(bind=engine)
@@ -14,7 +14,7 @@ app.include_router(orders_router, prefix="/orders")
 Instrumentator().instrument(app).expose(app)
 
 @app.get("/health")
-def health_check(db: Session = Depends(get_db)):
+def health_check(db: Session = Depends(get_db_session)):
     try:
         db.execute(text("SELECT 1"))
         return {"status": "ok", "db": "ok"}
