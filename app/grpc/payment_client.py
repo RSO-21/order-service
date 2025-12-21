@@ -1,8 +1,12 @@
 import grpc
 from app.grpc.payment_pb2 import CreatePaymentRequest
 from app.grpc.payment_pb2_grpc import PaymentServiceStub
+import os
 
-channel = grpc.insecure_channel("127.0.0.1:50051")
+host = os.getenv("PAYMENT_GRPC_HOST", "localhost")
+port = os.getenv("PAYMENT_GRPC_PORT", "50051")
+
+channel = grpc.insecure_channel(f"{host}:{port}")
 stub = PaymentServiceStub(channel)
 
 def create_payment(order_id: int, user_id: int, amount: float):

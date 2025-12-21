@@ -1,6 +1,14 @@
 import pika, json
 from app.database import get_db_session as get_db
 from app.models import Order
+import os
+
+RABBITMQ_HOST = os.getenv("RABBITMQ_HOST", "localhost")
+
+def get_connection():
+    return pika.BlockingConnection(
+        pika.ConnectionParameters(host=RABBITMQ_HOST)
+    )
 
 def callback(ch, method, properties, body):
     # decode and parse
@@ -20,7 +28,7 @@ def callback(ch, method, properties, body):
         print(f"Error processing message: {e}")
 
 def start_consumer():
-    connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
+    connection = get_connection()
     channel = connection.channel()
 
     # Durable=True ensures the queue survives a RabbitMQ restart
