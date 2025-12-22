@@ -1,19 +1,23 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Header
 from app.schemas import OrderCreate, OrderResponse, OrderItemCreate, OrderItemResponse, OrderPaymentUpdate
 from app.database import get_db_session as get_db
 from app import models
-from typing import List
+from typing import List, Optional
 from sqlalchemy.orm import Session
 from app.grpc import payment_client
 
 router = APIRouter()
 
+def get_db_with_schema(x_tenant_id: Optional[str] = Header(None)):
+    """Dependency to inject DB session with dynamic schema from X-Tenant-ID header"""
+    return get_db(schema=x_tenant_id or "public")
+
 @router.get("/", response_model=List[OrderResponse])
-def list_order(db: Session = Depends(get_db)):
+def list_order(db: Session = Depends(get_db_with_schema)):
     return db.query(models.Order).all()
 
 @router.post("/")
-def create_order(order: OrderCreate, db: Session = Depends(get_db), status_code=201):
+def create_order(order: OrderCreate, db: Session = Depends(get_db_with_schema), status_code=201, x_tenant_id: Optional[str] = Header(None)):
     # create Order instance
     db_order = models.Order(user_id=order.user_id)
     # create OrderItem instances
@@ -29,7 +33,8 @@ def create_order(order: OrderCreate, db: Session = Depends(get_db), status_code=
     payment = payment_client.create_payment(
         order_id=db_order.id,
         user_id=order.user_id,
-        amount=order.amount
+        amount=order.amount,
+        tenant_id=x_tenant_id
     )
 
     # store payment to DB
@@ -44,11 +49,11 @@ def create_order(order: OrderCreate, db: Session = Depends(get_db), status_code=
     }
 
 @router.get("/items", response_model=List[OrderItemResponse])
-def list_order_items(db: Session = Depends(get_db)):
+def list_order_items(db: Session = Depends(get_db_with_schema)):
     return db.query(models.OrderItem).all()
 
 @router.get("/items/{item_id}", response_model=OrderItemResponse)
-def get_order_item(item_id: int, db: Session = Depends(get_db)):
+def get_order_item(item_id: int, db: Session = Depends(get_db_with_schema)):
     order_item = db.query(models.OrderItem).filter(models.OrderItem.id == item_id).first()
 
     if not order_item:
@@ -57,7 +62,7 @@ def get_order_item(item_id: int, db: Session = Depends(get_db)):
     return order_item
 
 @router.patch("/{order_id}/payment", response_model=OrderResponse)
-def update_order_payment(order_id: int, update: OrderPaymentUpdate, db: Session = Depends(get_db)):
+def update_order_payment(order_id: int, update: OrderPaymentUpdate, db: Session = Depends(get_db_with_schema)):
     # Fetch the order
     order = db.query(models.Order).filter(models.Order.id == order_id).first()
     if not order:
@@ -73,7 +78,7 @@ def update_order_payment(order_id: int, update: OrderPaymentUpdate, db: Session 
     return order
 
 @router.get("/{order_id}", response_model=OrderResponse)
-def get_order(order_id: int, db: Session = Depends(get_db)):
+def get_order(order_id: int, db: Session = Depends(get_db_with_schema)):
     order = db.query(models.Order).filter(models.Order.id == order_id).first()
 
     if not order:

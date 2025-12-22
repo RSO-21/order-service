@@ -2,6 +2,8 @@ import pika, json
 from app.database import get_db_session as get_db
 from app.models import Order
 import os
+from typing import Optional
+from fastapi import Header
 
 RABBITMQ_HOST = os.getenv("RABBITMQ_HOST", "localhost")
 
@@ -10,11 +12,16 @@ def get_connection():
         pika.ConnectionParameters(host=RABBITMQ_HOST)
     )
 
+def get_db_with_schema(x_tenant_id: Optional[str] = Header(None)):
+    """Dependency to inject DB session with dynamic schema from X-Tenant-ID header"""
+    return get_db(schema=x_tenant_id or "public")
+
 def callback(ch, method, properties, body):
     # decode and parse
     event = json.loads(body.decode('utf-8'))
+    tenant_id = event.get("tenant_id", "public")
     
-    db = get_db()
+    db = get_db_with_schema(tenant_id)
     try:
         # DB logic
         order = db.query(Order).filter(Order.id == event["order_id"]).first()
