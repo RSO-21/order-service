@@ -8,16 +8,20 @@ from app.grpc import payment_client
 
 router = APIRouter()
 
-def get_db_with_schema(x_tenant_id: Optional[str] = Header(None)):
+def get_tenant_id(x_tenant_id: Optional[str] = Header(None)) -> str:
+    """Extract tenant ID from header, default to public"""
+    return x_tenant_id or "public"
+
+def get_db_with_schema(tenant_id: str = Depends(get_tenant_id)):
     """Dependency to inject DB session with dynamic schema from X-Tenant-ID header"""
-    return get_db(schema=x_tenant_id or "public")
+    return get_db(schema=tenant_id)
 
 @router.get("/", response_model=List[OrderResponse])
 def list_order(db: Session = Depends(get_db_with_schema)):
     return db.query(models.Order).all()
 
 @router.post("/")
-def create_order(order: OrderCreate, db: Session = Depends(get_db_with_schema), status_code=201, x_tenant_id: Optional[str] = Header(None)):
+def create_order(order: OrderCreate, db: Session = Depends(get_db_with_schema), status_code=201, tenant_id: str = Depends(get_tenant_id)):
     # create Order instance
     db_order = models.Order(user_id=order.user_id)
     # create OrderItem instances
@@ -34,7 +38,7 @@ def create_order(order: OrderCreate, db: Session = Depends(get_db_with_schema), 
         order_id=db_order.id,
         user_id=order.user_id,
         amount=order.amount,
-        tenant_id=x_tenant_id
+        tenant_id=tenant_id
     )
 
     # store payment to DB
