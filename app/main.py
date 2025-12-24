@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 from app.database import get_db_session, engine, Base
 from prometheus_fastapi_instrumentator import Instrumentator
+from app.grpc.orders_server import serve_grpc
 
 Base.metadata.create_all(bind=engine)
 
@@ -24,3 +25,16 @@ def health_check(db: Session = Depends(get_db_session)):
 @app.get("/")
 def read_root():
     return {"message": "Welcome to the Orders Microservice"}
+
+grpc_server = None
+
+@app.on_event("startup")
+def start_grpc_server():
+    global grpc_server
+    grpc_server = serve_grpc(host="0.0.0.0", port=50051)
+
+@app.on_event("shutdown")
+def stop_grpc_server():
+    global grpc_server
+    if grpc_server:
+        grpc_server.stop(0)
