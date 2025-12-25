@@ -28,9 +28,8 @@ class OrderResponse(BaseModel):
     user_id: int
     order_status: str
     payment_status: str
-    payment_id: int | None
+    payment_id: int
     created_at: datetime
-    updated_at: datetime
     items: List[OrderItemResponse]
 
     model_config = {"from_attributes": True}

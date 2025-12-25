@@ -20,8 +20,8 @@ def get_db_with_schema(tenant_id: str = Depends(get_tenant_id)):
 def list_order(db: Session = Depends(get_db_with_schema)):
     return db.query(models.Order).all()
 
-@router.post("/")
-def create_order(order: OrderCreate, db: Session = Depends(get_db_with_schema), status_code=201, tenant_id: str = Depends(get_tenant_id)):
+@router.post("/", response_model=OrderResponse, status_code=201)
+def create_order(order: OrderCreate, db: Session = Depends(get_db_with_schema), tenant_id: str = Depends(get_tenant_id)):
     # create Order instance
     db_order = models.Order(user_id=order.user_id)
     # create OrderItem instances
@@ -46,11 +46,7 @@ def create_order(order: OrderCreate, db: Session = Depends(get_db_with_schema), 
     db.commit()
 
     # return information to frontend
-    return {
-        "order_id": db_order.id,
-        "payment_id": payment.payment_id,
-        "payment_status": "PENDING"
-    }
+    return db_order
 
 @router.get("/items", response_model=List[OrderItemResponse])
 def list_order_items(db: Session = Depends(get_db_with_schema)):
