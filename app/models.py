@@ -10,8 +10,8 @@ class Order(Base):
     __tablename__ = "orders"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, nullable=False)
-    partner_id = Column(Integer, nullable=True)
+    user_id = Column(String(36), nullable=False)
+    partner_id = Column(String(36), nullable=True)
     order_status = Column(String(30), nullable=False, default="pending")
     payment_status = Column(String(30), nullable=False, default="unpaid")
     payment_id = Column(Integer, nullable=True)

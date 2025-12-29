@@ -19,13 +19,13 @@ class OrderItemResponse(BaseModel):
 
 ## Order schemas
 class OrderCreate(BaseModel):
-    user_id: int
+    user_id: str
     items: List[OrderItemCreate]
     amount: Decimal | None = None
 
 class OrderResponse(BaseModel):
     id: int
-    user_id: int
+    user_id: str
     order_status: str
     payment_status: str
     payment_id: int
