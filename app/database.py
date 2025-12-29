@@ -20,3 +20,13 @@ def get_db_session(schema: str = None):
         # Set search_path for this session
         session.execute(text(f"SET search_path TO {schema}"))
     return session
+
+# Dependency for FastAPI routes + gRPC (generator that closes session)
+def get_db(schema: str | None = None):
+    session = SessionLocal()
+    try:
+        if schema:
+            session.execute(text(f"SET search_path TO {schema}"))
+        yield session
+    finally:
+        session.close()
