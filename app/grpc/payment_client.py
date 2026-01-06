@@ -10,7 +10,7 @@ port = os.getenv("PAYMENT_GRPC_PORT", "50051")
 channel = grpc.insecure_channel(f"{host}:{port}")
 stub = PaymentServiceStub(channel)
 
-def create_payment(order_id: int, user_id: int, amount: float, tenant_id: Optional[str] = None):
+def create_payment(order_id: int, user_id: str, amount: float, tenant_id: Optional[str] = None):
     metadata = [("x-tenant-id", (tenant_id or "public"))]
     
     return stub.CreatePayment(
