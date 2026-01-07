@@ -21,18 +21,18 @@ def callback(ch, method, properties, body):
     event = json.loads(body.decode('utf-8'))
     tenant_id = event.get("tenant_id", "public")
     
-    db = get_db_with_schema(tenant_id)
-    try:
-        # DB logic
-        order = db.query(Order).filter(Order.id == event["order_id"]).first()
-        if order:
-            order.payment_status = event["payment_status"]
-            order.order_status = "CONFIRMED" if event["payment_status"] == "PAID" else "CANCELLED"
-            db.commit()
-        
-        ch.basic_ack(delivery_tag=method.delivery_tag)
-    except Exception as e:
-        print(f"Error processing message: {e}")
+    with get_db(schema=tenant_id) as db:
+        try:
+            # DB logic
+            order = db.query(Order).filter(Order.id == event["order_id"]).first()
+            if order:
+                order.payment_status = event["payment_status"]
+                order.order_status = "CONFIRMED" if event["payment_status"] == "PAID" else "CANCELLED"
+                db.commit()
+            
+            ch.basic_ack(delivery_tag=method.delivery_tag)
+        except Exception as e:
+            print(f"Error processing message: {e}")
 
 def start_consumer():
     connection = get_connection()
