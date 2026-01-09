@@ -20,6 +20,7 @@ class OrderItemResponse(BaseModel):
 ## Order schemas
 class OrderCreate(BaseModel):
     user_id: str
+    partner_id: str
     items: List[OrderItemCreate]
     amount: Decimal | None = None
 

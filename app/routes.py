@@ -23,7 +23,7 @@ def list_order(db: Session = Depends(get_db_with_schema)):
 @router.post("/", response_model=OrderResponse, status_code=201)
 def create_order(order: OrderCreate, db: Session = Depends(get_db_with_schema), tenant_id: str = Depends(get_tenant_id)):
     # create Order instance
-    db_order = models.Order(user_id=order.user_id)
+    db_order = models.Order(user_id=order.user_id, partner_id=order.partner_id)
     # create OrderItem instances
     db_order.items = [
         models.OrderItem(offer_id=item.offer_id, quantity=item.quantity)

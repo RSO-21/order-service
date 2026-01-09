@@ -72,6 +72,53 @@ class OrdersService(orders_pb2_grpc.OrdersServiceServicer):
                 except Exception:
                     pass
 
+    def GetOrderById(self, request, context):
+        order_id = request.order_id
+
+        metadata = dict(context.invocation_metadata())
+        tenant_id = metadata.get("x-tenant-id", "public")
+
+        with get_db_session(schema=tenant_id) as db:
+            try:
+                o = db.query(models.Order).filter(models.Order.id == order_id).first()
+
+                if not o:
+                    context.set_code(grpc.StatusCode.NOT_FOUND)
+                    context.set_details("Order not found")
+                    return orders_pb2.GetOrderByIdResponse()
+
+                pb_items = [
+                    orders_pb2.OrderItem(
+                        id=it.id,
+                        order_id=it.order_id,
+                        offer_id=it.offer_id,
+                        quantity=it.quantity,
+                    )
+                    for it in (o.items or [])
+                ]
+
+                pb_order = orders_pb2.Order(
+                    id=o.id,
+                    user_id=o.user_id,
+                    order_status=o.order_status,
+                    payment_status=o.payment_status,
+                    created_at=to_timestamp(o.created_at),
+                    updated_at=to_timestamp(o.updated_at),
+                    items=pb_items,
+                )
+
+                if o.partner_id is not None:
+                    pb_order.partner_id = o.partner_id
+                if o.payment_id is not None:
+                    pb_order.payment_id = o.payment_id
+
+                return orders_pb2.GetOrderByIdResponse(order=pb_order)
+
+            except Exception as e:
+                context.set_code(grpc.StatusCode.INTERNAL)
+                context.set_details(f"DB error: {e}")
+                return orders_pb2.GetOrderByIdResponse()
+
 
 def serve_grpc(host="0.0.0.0", port=50051):
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
