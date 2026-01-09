@@ -5,10 +5,20 @@ from sqlalchemy import text
 from app.database import get_db_session, engine, Base
 from prometheus_fastapi_instrumentator import Instrumentator
 from app.grpc.orders_server import serve_grpc
+from fastapi.middleware.cors import CORSMiddleware
 
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Orders Microservice", version="1.0.0")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:4200",  # Angular dev
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 app.include_router(orders_router, prefix="/orders")
 
 # Expose /metrics compatible with Prometheus scraping
