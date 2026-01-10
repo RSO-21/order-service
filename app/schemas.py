@@ -31,6 +31,7 @@ class OrderResponse(BaseModel):
     payment_status: str
     payment_id: int
     created_at: datetime
+    updated_at: datetime
     items: List[OrderItemResponse]
 
     model_config = {"from_attributes": True}
