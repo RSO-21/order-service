@@ -19,7 +19,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-app.include_router(orders_router, prefix="/orders")
 
 # Expose /metrics compatible with Prometheus scraping
 Instrumentator().instrument(app).expose(app)
@@ -48,3 +47,5 @@ def stop_grpc_server():
     global grpc_server
     if grpc_server:
         grpc_server.stop(0)
+
+app.include_router(orders_router)
