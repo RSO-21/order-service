@@ -1,10 +1,11 @@
-from sqlalchemy import Column, Integer, ForeignKey
+from sqlalchemy import Column, Integer, ForeignKey, Numeric
 from app.database import Base
 
 # app/models.py
 from sqlalchemy import Column, Integer, DateTime, String, ForeignKey, func
 from sqlalchemy.orm import relationship
 from app.database import Base
+import uuid
 
 class Order(Base):
     __tablename__ = "orders"
@@ -28,3 +29,22 @@ class OrderItem(Base):
     offer_id = Column(Integer, nullable=False)
     quantity = Column(Integer, nullable=False)
     order = relationship("Order", back_populates="items")
+
+class OrderLookup(Base):
+    __tablename__ = "order_lookup"
+    __table_args__ = {"schema": "public"}
+
+    external_id = Column(
+        String(255),
+        primary_key=True,
+        default=lambda: str(uuid.uuid4()),
+        nullable=False
+    )
+    order_id = Column(Integer, nullable=False)
+    tenant_id = Column(String(100), nullable=False)
+    user_id = Column(String(36), nullable=False, index=True)
+    
+    total_amount = Column(Numeric(10, 2))
+    order_status = Column(String(30))
+    partner_id = Column(String(36), nullable=False, index=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
