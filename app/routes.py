@@ -41,6 +41,17 @@ def create_order(order: OrderCreate, db: Session = Depends(get_db_with_schema), 
         tenant_id=tenant_id
     )
 
+    new_lookup = models.OrderLookup(
+        order_id=db_order.id,
+        tenant_id=tenant_id,
+        user_id=order.user_id,
+        order_status="pending",
+        partner_id=order.partner_id,
+        total_amount=order.amount
+    )
+
+    db.add(new_lookup)
+
     # store payment to DB
     db_order.payment_id = payment.payment_id
     db.commit()
