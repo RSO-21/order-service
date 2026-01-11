@@ -5,7 +5,7 @@ import os
 from typing import Optional
 from fastapi import Header
 
-RABBITMQ_HOST = os.getenv("RABBITMQ_HOST", "localhost")
+RABBITMQ_HOST = os.getenv("RABBITMQ_HOST", "rabbitmq")
 
 def get_connection():
     return pika.BlockingConnection(
