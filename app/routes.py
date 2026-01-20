@@ -1,3 +1,4 @@
+import logging
 from fastapi import APIRouter, HTTPException, Depends, Header
 from app.schemas import OrderCreate, OrderResponse, OrderItemCreate, OrderItemResponse, OrderPaymentUpdate
 from app.database import get_db_session as get_db
@@ -29,9 +30,13 @@ def create_order(order: OrderCreate, db: Session = Depends(get_db_with_schema), 
         models.OrderItem(offer_id=item.offer_id, quantity=item.quantity)
         for item in order.items
     ]
+    print("tenant id", tenant_id)
+    logging.info(f"Tenant id {tenant_id}")
+    
     db.add(db_order)
     db.commit()
     db.refresh(db_order)
+    
 
     # call payment service with grpc and create payment
     payment = payment_client.create_payment(
@@ -45,7 +50,7 @@ def create_order(order: OrderCreate, db: Session = Depends(get_db_with_schema), 
         order_id=db_order.id,
         tenant_id=tenant_id,
         user_id=order.user_id,
-        order_status="pending",
+        order_status="paid",
         partner_id=order.partner_id,
         total_amount=order.amount
     )
@@ -53,8 +58,12 @@ def create_order(order: OrderCreate, db: Session = Depends(get_db_with_schema), 
     db.add(new_lookup)
 
     # store payment to DB
+    logging.info(f"external id {payment.external_id}")
+    print("External Id PRINT", payment.external_id)
     db_order.payment_id = payment.payment_id
     db.commit()
+    db.refresh(db_order)
+    db_order.external_id = payment.external_id
 
     # return information to frontend
     return db_order

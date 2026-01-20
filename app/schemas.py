@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from enum import Enum
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 from decimal import Decimal
 
 ## OrderItem schemas (define these first so Order schemas can reference them)
@@ -33,6 +33,7 @@ class OrderResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     items: List[OrderItemResponse]
+    external_id: Optional[str]
 
     model_config = {"from_attributes": True}
 

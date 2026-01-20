@@ -9,7 +9,7 @@ DATABASE_URL = f"postgresql://{settings.pg_user}:{settings.pg_password}@{setting
 
 engine = create_engine(
     DATABASE_URL,
-    pool_size=2,
+    pool_size=4,
     max_overflow=0,
     pool_pre_ping=True,
 )
